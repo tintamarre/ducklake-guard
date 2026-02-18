@@ -30,6 +30,14 @@ su - postgres
 psql -d ducklake_catalog -f sql/create_reader.sql
 ```
 
+### Catalog visibility (RLS)
+
+Hide tables the reader shouldn't know about:
+
+```bash
+psql -d ducklake_catalog -f sql/enable_rls.sql
+```
+
 ### S3 data layer
 
 Restrict an S3 reader key to `GetObject` on a single table prefix. See [research/s3-access-control.md](research/s3-access-control.md) for how the bucket policy works.
