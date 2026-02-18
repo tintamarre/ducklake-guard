@@ -1,6 +1,8 @@
 # ducklake-guard
 
-Explores access control for [DuckLake](https://ducklake.select) lakehouses — restricting a reader to read-only access on specific tables across the Postgres catalog and S3 data layer.
+> **Work in progress** — this is an evolving learning project, not a finished solution.
+
+Explores access control for [DuckLake](https://ducklake.select) lakehouses — restricting a reader to specific tables across the Postgres catalog and S3 data layer. Built on Hetzner Cloud (Object Storage + managed Postgres), so the S3 policies use Hetzner-specific principal ARNs and Deny-only rules.
 
 ## Setup
 

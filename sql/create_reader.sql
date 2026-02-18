@@ -1,3 +1,2 @@
--- Reader only
-CREATE USER ducklake_reader WITH PASSWORD 'simple';
-GRANT SELECT ON ALL TABLES IN SCHEMA main TO ducklake_reader;
+CREATE USER reader WITH PASSWORD 'simple';
+GRANT SELECT ON ALL TABLES IN SCHEMA public TO reader;

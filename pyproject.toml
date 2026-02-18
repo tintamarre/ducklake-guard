@@ -1,11 +1,10 @@
 [project]
 name = "ducklake-guard"
 version = "0.1.0"
-description = "Add your description here"
+description = "Access control for DuckLake lakehouses — Postgres catalog, S3 data layer, and row-level security"
 readme = "README.md"
 requires-python = ">=3.14"
 dependencies = [
     "duckdb>=1.4.4",
     "minio>=7.2.0",
-    "typer>=0.24.0",
 ]
