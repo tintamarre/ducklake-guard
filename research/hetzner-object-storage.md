@@ -19,6 +19,7 @@ https://docs.hetzner.com/storage/object-storage/overview/
 | Objects per bucket                | 50,000,000         |
 | S3 credentials (across projects)  | 200                |
 | Buckets (across projects)         | 100                |
+| Bucket policy size                | 1 MB (~120 users × 100 tables, verify with `scripts/test_policy_size_limit.py`) |
 
 ## Access control
 

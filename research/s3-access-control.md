@@ -2,60 +2,88 @@
 
 https://ducklake.select/docs/stable/duckdb/guides/access_control#access-control-with-s3-and-postgresql
 
-Hetzner Object Storage gives every S3 key in a project full access to all
-buckets by default. We use a bucket policy to restrict a reader key to
-read-only access on a single DuckLake table.
+## Hetzner requires two projects for access control: one for the bucket, one for user credentials.
+
+Hetzner gives every S3 key in the same project full access to all buckets by default.
+This negates any ability to have granular S3 access within the same bucket.
+
+However, by creating S3 keys in a separate project, access is denied by default.
+This gives us the space manage permissions without the risk of users deleting these constraints themselves.
+
+| | Same-project key | Separate-project key |
+|---|---|---|
+| Default access | Full (implicit Allow) | None |
+| Restrict to table | Deny + NotResource | Allow on specific prefix |
+| Policy deleted | Key regains full access | Key has zero access |
+| Policy tampering | Key can delete its own restrictions | Key cannot touch policy (403) |
 
 ## 1. Create a reader key pair
 
-Go to Hetzner Console and create a second S3 credential:
+Create a second Hetzner Cloud project for the reader credentials. In that project,
+create an S3 key pair:
 
 https://console.hetzner.cloud → Project → Security → S3 Credentials
 
-Add the credentials to `.env`:
+Add to `.env`:
 
 ```
-S3_READER_ACCESS_KEY="..."
-S3_READER_SECRET_KEY="..."
+S3_READER_EXT_ACCESS_KEY="..."
+S3_READER_EXT_SECRET_KEY="..."
+HETZNER_EXT_PROJECT_ID="..."
+```
+
+The principal ARN uses the reader's project ID (not the project that owns the
+bucket):
+
+```
+arn:aws:iam:::user/p<PROJECT_ID>:<ACCESS_KEY>
 ```
 
 ## 2. Apply the bucket policy
 
-The policy uses two Deny statements. Hetzner keys have full access by default
-(implicit Allow), so we only need to deny what's forbidden:
+The policy uses three Allow statements granting the reader key read-only access
+to a single DuckLake table prefix:
 
 ```json
 {
   "Version": "2012-10-17",
   "Statement": [
     {
-      "Sid": "DenyWrite",
-      "Effect": "Deny",
+      "Sid": "AllowReaderGetBucketLocation",
+      "Effect": "Allow",
       "Principal": {
-        "AWS": "arn:aws:iam:::user/p<HETZNER_PROJECT_ID>:<READER_ACCESS_KEY>"
+        "AWS": "arn:aws:iam:::user/p<PROJECT_ID>:<ACCESS_KEY>"
       },
-      "Action": [
-        "s3:PutObject",
-        "s3:DeleteObject",
-        "s3:AbortMultipartUpload"
-      ],
-      "Resource": [
-        "arn:aws:s3:::<bucket>",
-        "arn:aws:s3:::<bucket>/*"
-      ]
+      "Action": "s3:GetBucketLocation",
+      "Resource": "arn:aws:s3:::<bucket>"
     },
     {
-      "Sid": "DenyReadOutsideTable",
-      "Effect": "Deny",
+      "Sid": "AllowReaderListPrefix",
+      "Effect": "Allow",
       "Principal": {
-        "AWS": "arn:aws:iam:::user/p<HETZNER_PROJECT_ID>:<READER_ACCESS_KEY>"
+        "AWS": "arn:aws:iam:::user/p<PROJECT_ID>:<ACCESS_KEY>"
       },
-      "Action": ["s3:GetObject"],
-      "NotResource": ["arn:aws:s3:::<bucket>/main/<table>/*"]
+      "Action": "s3:ListBucket",
+      "Resource": "arn:aws:s3:::<bucket>",
+      "Condition": {
+        "StringLike": { "s3:prefix": ["main/<table>/*"] }
+      }
+    },
+    {
+      "Sid": "AllowReaderGetObject",
+      "Effect": "Allow",
+      "Principal": {
+        "AWS": "arn:aws:iam:::user/p<PROJECT_ID>:<ACCESS_KEY>"
+      },
+      "Action": "s3:GetObject",
+      "Resource": "arn:aws:s3:::<bucket>/main/<table>/*"
     }
   ]
 }
 ```
+
+`s3:GetBucketLocation` is required — the minio client calls it before any list
+or get operation.
 
 The script applies this automatically:
 
@@ -87,3 +115,23 @@ Should fail — inserting into the allowed table (PutObject denied):
 ```sql
 INSERT INTO customer (c_custkey) VALUES (999999);
 ```
+
+## Escalation test
+
+Verifies that a reader key with read-only access cannot escalate privileges:
+
+```bash
+set -a && source .env && set +a
+READER_TABLE=customer uv run python scripts/test_cross_project_policy.py
+```
+
+The script:
+
+1. Admin applies a whole-bucket Allow policy for the reader key.
+2. Reader key lists and reads objects (positive control — must succeed).
+3. Reader key attempts `delete_bucket_policy`, `set_bucket_policy`, and
+   `put_object` (must all fail with 403).
+4. Admin switches to a prefix-scoped policy for `main/<table>/` only.
+5. Reader key reads the allowed table (must succeed) and a different table
+   (must fail with 403).
+6. Admin restores the per-table reader policy.

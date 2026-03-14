@@ -5,8 +5,8 @@ CREATE OR REPLACE SECRET s3_secret (
     TYPE s3,
     PROVIDER config,
     ENDPOINT getenv('S3_ENDPOINT'),
-    KEY_ID getenv('S3_READER_ACCESS_KEY'),
-    SECRET getenv('S3_READER_SECRET_KEY'),
+    KEY_ID getenv('S3_READER_EXT_ACCESS_KEY'),
+    SECRET getenv('S3_READER_EXT_SECRET_KEY'),
     REGION getenv('S3_REGION'),
     URL_STYLE 'path',
     USE_SSL CAST(getenv('S3_USE_SSL') AS BOOLEAN)
