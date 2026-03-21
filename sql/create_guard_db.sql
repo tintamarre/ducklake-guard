@@ -1,4 +1,4 @@
-CREATE DATABASE ducklake_guard;
+CREATE DATABASE ducklake_guard OWNER ducklake;
 
 \c ducklake_guard
 
@@ -11,7 +11,7 @@ DO $$ BEGIN
     END IF;
 END $$;
 
-CREATE TABLE users (
+CREATE TABLE IF NOT EXISTS users (
     name            TEXT PRIMARY KEY,
     access_key      TEXT NOT NULL UNIQUE,
     project_id      TEXT NOT NULL,
@@ -21,7 +21,7 @@ CREATE TABLE users (
     created_by      TEXT
 );
 
-CREATE TABLE grants (
+CREATE TABLE IF NOT EXISTS grants (
     user_name       TEXT REFERENCES users(name) ON DELETE CASCADE,
     table_name      TEXT NOT NULL,
     permission      permission_type NOT NULL,
@@ -30,7 +30,7 @@ CREATE TABLE grants (
     PRIMARY KEY (user_name, table_name)
 );
 
-CREATE TABLE policy_log (
+CREATE TABLE IF NOT EXISTS policy_log (
     id              SERIAL PRIMARY KEY,
     user_name       TEXT,
     action          log_action NOT NULL,
@@ -38,5 +38,8 @@ CREATE TABLE policy_log (
     created_at      TIMESTAMPTZ DEFAULT now()
 );
 
-CREATE INDEX idx_policy_log_user_name ON policy_log (user_name);
-CREATE INDEX idx_policy_log_created_at ON policy_log (created_at);
+CREATE INDEX IF NOT EXISTS idx_policy_log_user_name ON policy_log (user_name);
+CREATE INDEX IF NOT EXISTS idx_policy_log_created_at ON policy_log (created_at);
+
+GRANT ALL ON ALL TABLES IN SCHEMA public TO ducklake;
+GRANT USAGE, SELECT ON ALL SEQUENCES IN SCHEMA public TO ducklake;

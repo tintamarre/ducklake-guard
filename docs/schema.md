@@ -15,14 +15,14 @@ erDiagram
     grants {
         text user_name FK
         text table_name
-        text permission "read_only | read_write"
+        permission_type permission "read_only | read_write"
         timestamptz granted_at
         text granted_by
     }
     policy_log {
         serial id PK
         text user_name
-        text action
+        log_action action "create | delete | allow | deny | sync"
         jsonb detail
         timestamptz created_at
     }
@@ -41,7 +41,7 @@ One row per managed user. The `access_key` and `project_id` come from the Hetzne
 
 One row per user-table pair. The composite primary key `(user_name, table_name)` enforces exactly one permission level per table per user. Running `dga allow` on an existing grant UPSERTs the permission.
 
-`permission` is constrained to `read_only` or `read_write`. Grants cascade on user deletion.
+`permission` uses the `permission_type` ENUM (`read_only`, `read_write`). Grants cascade on user deletion.
 
 ### `policy_log`
 

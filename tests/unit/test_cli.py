@@ -93,3 +93,26 @@ class TestUserCreate:
     def test_missing_access_key(self):
         result = CliRunner().invoke(cli, ["user", "create", "alice"])
         assert result.exit_code != 0
+
+
+class TestUserDelete:
+    def test_user_not_found(self, infra):
+        guard, _catalog = infra
+        mock_conn = guard.return_value
+        mock_conn.transaction.return_value.__enter__ = MagicMock()
+        mock_conn.transaction.return_value.__exit__ = MagicMock(return_value=False)
+        mock_cur = MagicMock()
+        mock_cur.fetchone.return_value = None
+        mock_conn.cursor.return_value = mock_cur
+
+        with patch("ducklake_guard.cli.get_user", return_value=None):
+            result = CliRunner().invoke(cli, ["user", "delete", "nonexistent"])
+            assert result.exit_code != 0
+            assert "not found" in result.output
+
+
+class TestAllow:
+    def test_missing_permission_flag(self, infra):
+        result = CliRunner().invoke(cli, ["allow", "alice", "--table", "orders"])
+        assert result.exit_code != 0
+        assert "read-only" in result.output or "read-write" in result.output
