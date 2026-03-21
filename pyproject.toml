@@ -3,7 +3,19 @@ name = "ducklake-guard"
 version = "0.1.0"
 description = "Access control for DuckLake lakehouses"
 readme = "README.md"
-requires-python = ">=3.14"
+license = "MIT"
+requires-python = ">=3.12"
+authors = [{name = "Floyd Berndsen", email = "hi@berndsen.io"}]
+keywords = ["ducklake", "access-control", "s3", "hetzner", "duckdb"]
+classifiers = [
+    "Development Status :: 3 - Alpha",
+    "Environment :: Console",
+    "Intended Audience :: System Administrators",
+    "License :: OSI Approved :: MIT License",
+    "Programming Language :: Python :: 3.12",
+    "Programming Language :: Python :: 3.13",
+    "Topic :: Security",
+]
 dependencies = [
     "click>=8.1.0",
     "duckdb>=1.4.4",
@@ -13,6 +25,12 @@ dependencies = [
 
 [project.scripts]
 dga = "ducklake_guard.cli:cli"
+
+[project.urls]
+Homepage = "https://github.com/berndsen-io/ducklake-guard"
+Repository = "https://github.com/berndsen-io/ducklake-guard"
+Documentation = "https://github.com/berndsen-io/ducklake-guard/tree/main/docs"
+Issues = "https://github.com/berndsen-io/ducklake-guard/issues"
 
 [build-system]
 requires = ["hatchling"]
@@ -28,7 +46,7 @@ dev = [
 ]
 
 [tool.ruff]
-target-version = "py314"
+target-version = "py312"
 src = ["src", "tests"]
 
 [tool.ruff.lint]

@@ -1,8 +1,23 @@
 # `ducklake-guard`
+> **Experimental** — ducklake-guard is under active development. It works, but has not been audited. Review carefully before using in sensitive or production environments.
+[![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
 
 Per-table access control for [DuckLake](https://ducklake.select) lakehouses on Hetzner Cloud. A single CLI manages S3 bucket policies, Postgres catalog visibility (RLS), and catalog roles, with an audit log.
 
-[!NOTE] I'll add AWS and Scaleway, make sure to follow the repo for any updates.
+> [!NOTE]
+> I'll add AWS and Scaleway, make sure to follow the repo for any updates.
+
+## Installation
+
+```bash
+pip install git+https://github.com/berndsen-io/ducklake-guard.git
+```
+
+Or with [uv](https://docs.astral.sh/uv/):
+
+```bash
+uv pip install git+https://github.com/berndsen-io/ducklake-guard.git
+```
 
 ## System overview
 
