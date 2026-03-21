@@ -17,7 +17,12 @@ def create_catalog_role(conn: psycopg.Connection, user_name: str) -> str:
             )
         )
         conn.execute(
-            sql.SQL("GRANT ALL ON ALL TABLES IN SCHEMA public TO {}").format(
+            sql.SQL("GRANT {} TO ducklake").format(
+                sql.Identifier(role_name),
+            )
+        )
+        conn.execute(
+            sql.SQL("GRANT SELECT ON ALL TABLES IN SCHEMA public TO {}").format(
                 sql.Identifier(role_name),
             )
         )
@@ -51,6 +56,21 @@ def drop_catalog_role(conn: psycopg.Connection, user_name: str) -> None:
             )
         )
         conn.execute(
+            sql.SQL("REVOKE CREATE ON SCHEMA public FROM {}").format(
+                sql.Identifier(role_name),
+            )
+        )
+        conn.execute(
+            sql.SQL("REASSIGN OWNED BY {} TO ducklake").format(
+                sql.Identifier(role_name),
+            )
+        )
+        conn.execute(
+            sql.SQL("DROP OWNED BY {}").format(
+                sql.Identifier(role_name),
+            )
+        )
+        conn.execute(
             sql.SQL("DROP USER IF EXISTS {}").format(
                 sql.Identifier(role_name),
             )
@@ -63,8 +83,11 @@ def sync_rls_policies(
     users: dict[str, dict[str, str]],
 ) -> None:
     user_tables: dict[str, list[str]] = {}
+    has_write: dict[str, bool] = {}
     for g in grants:
         user_tables.setdefault(g["user_name"], []).append(g["table_name"])
+        if g["permission"] == "read_write":
+            has_write[g["user_name"]] = True
 
     with conn.pipeline():
         for user_name in users:
@@ -88,5 +111,35 @@ def sync_rls_policies(
                         sql.Identifier(policy_name),
                         sql.Identifier(role_name),
                         table_list,
+                    )
+                )
+
+            if has_write.get(user_name):
+                conn.execute(
+                    sql.SQL(
+                        "GRANT INSERT, UPDATE, DELETE ON ALL TABLES"
+                        " IN SCHEMA public TO {}"
+                    ).format(sql.Identifier(role_name))
+                )
+                conn.execute(
+                    sql.SQL(
+                        "GRANT USAGE, UPDATE ON ALL SEQUENCES IN SCHEMA public TO {}"
+                    ).format(sql.Identifier(role_name))
+                )
+                conn.execute(
+                    sql.SQL("GRANT CREATE ON SCHEMA public TO {}").format(
+                        sql.Identifier(role_name)
+                    )
+                )
+            else:
+                conn.execute(
+                    sql.SQL(
+                        "REVOKE INSERT, UPDATE, DELETE ON ALL TABLES"
+                        " IN SCHEMA public FROM {}"
+                    ).format(sql.Identifier(role_name))
+                )
+                conn.execute(
+                    sql.SQL("REVOKE CREATE ON SCHEMA public FROM {}").format(
+                        sql.Identifier(role_name)
                     )
                 )

@@ -1,6 +1,13 @@
 # `ducklake-guard`
 > **Experimental** — ducklake-guard is under active development. It works, but has not been audited. Review carefully before using in sensitive or production environments.
+
+[![CI](https://github.com/berndsen-io/ducklake-guard/actions/workflows/ci.yml/badge.svg)](https://github.com/berndsen-io/ducklake-guard/actions/workflows/ci.yml)
 [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
+[![Python 3.12+](https://img.shields.io/badge/python-3.12%2B-blue.svg)](https://www.python.org/downloads/)
+[![Ruff](https://img.shields.io/endpoint?url=https://raw.githubusercontent.com/astral-sh/ruff/main/assets/badge/v2.json)](https://github.com/astral-sh/ruff)
+[![DuckDB](https://img.shields.io/badge/DuckDB-v1.5.0-yellow?logo=duckdb)](https://duckdb.org)
+[![DuckLake](https://img.shields.io/badge/DuckLake-v0.4-green?logo=duckdb)](https://ducklake.select)
+[![Hetzner Cloud](https://img.shields.io/badge/Hetzner-Cloud-d50c2d?logo=hetzner)](https://www.hetzner.com/cloud/)
 
 Per-table access control for [DuckLake](https://ducklake.select) lakehouses on Hetzner Cloud. A single CLI manages S3 bucket policies, Postgres catalog visibility (RLS), and catalog roles, with an audit log.
 

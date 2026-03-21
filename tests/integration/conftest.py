@@ -118,6 +118,10 @@ def _force_cleanup(
         sql.SQL("REVOKE ALL ON ALL SEQUENCES IN SCHEMA public FROM {}").format(
             sql.Identifier(role)
         ),
+        sql.SQL("REVOKE CREATE ON SCHEMA public FROM {}").format(sql.Identifier(role)),
+        sql.SQL("GRANT {} TO ducklake").format(sql.Identifier(role)),
+        sql.SQL("REASSIGN OWNED BY {} TO ducklake").format(sql.Identifier(role)),
+        sql.SQL("DROP OWNED BY {}").format(sql.Identifier(role)),
         sql.SQL("DROP ROLE IF EXISTS {}").format(sql.Identifier(role)),
     ]:
         with contextlib.suppress(Exception):
