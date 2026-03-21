@@ -51,4 +51,4 @@ The schema is designed to bridge toward compliance frameworks like SOC 2 and GDP
 
 ## Reference SQL
 
-The full schema definition is in [`sql/create_guard_db.sql`](../sql/create_guard_db.sql).
+The full schema definition is in [`src/ducklake_guard/templates.py`](../src/ducklake_guard/templates.py) as `SERVER_INIT_SQL`.

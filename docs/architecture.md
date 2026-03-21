@@ -23,7 +23,7 @@ graph LR
     ALLOW_S3 -->|no| DENIED["403"]
 ```
 
-Each DuckLake table lives un◊er an S3 prefix (`main/<table>/*`). ducklake-guard manages three things per user:
+Each DuckLake table lives under an S3 prefix (`main/<table>/*`). ducklake-guard manages three things per user:
 
 1. **S3 bucket policy.** Allow statements scoped to specific table prefixes, either read-only or read-write.
 2. **Catalog RLS.** Row-Level Security on `ducklake_table` so `SHOW TABLES` only reveals granted tables.
