@@ -5,6 +5,44 @@ description = "Access control for DuckLake lakehouses"
 readme = "README.md"
 requires-python = ">=3.14"
 dependencies = [
+    "click>=8.1.0",
     "duckdb>=1.4.4",
     "minio>=7.2.0",
+    "psycopg[binary]>=3.1.0",
 ]
+
+[project.scripts]
+dga = "ducklake_guard.cli:cli"
+
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[tool.hatch.build.targets.wheel]
+packages = ["src/ducklake_guard"]
+
+[dependency-groups]
+dev = [
+    "pytest>=8.0",
+    "ruff>=0.9.0",
+]
+
+[tool.ruff]
+target-version = "py314"
+src = ["src", "tests"]
+
+[tool.ruff.lint]
+select = ["E", "F", "I", "UP", "B", "SIM", "S", "RET", "PTH"]
+
+[tool.ruff.lint.per-file-ignores]
+"tests/**/*.py" = ["S101", "S105", "S608"]
+"scripts/**/*.py" = ["S608"]
+
+[tool.ruff.lint.pydocstyle]
+convention = "google"
+
+[tool.ruff.lint.isort]
+known-first-party = ["ducklake_guard"]
+
+[tool.pytest.ini_options]
+markers = ["e2e: hetzner infrastructure tests"]
