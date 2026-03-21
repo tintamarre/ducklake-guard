@@ -1,2 +1,0 @@
-CREATE USER reader WITH PASSWORD 'simple';
-GRANT SELECT ON ALL TABLES IN SCHEMA public TO reader;

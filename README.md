@@ -1,69 +1,80 @@
-# ducklake-guard
+# `ducklake-guard`
+> **Experimental** — ducklake-guard is under active development. It works, but has not been audited. Review carefully before using in sensitive or production environments.
+[![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
 
-> **Work in progress** — this is an evolving learning project, not a finished solution.
+Per-table access control for [DuckLake](https://ducklake.select) lakehouses on Hetzner Cloud. A single CLI manages S3 bucket policies, Postgres catalog visibility (RLS), and catalog roles, with an audit log.
 
-Explores access control for [DuckLake](https://ducklake.select) lakehouses — restricting a reader to specific tables across the Postgres catalog and S3 data layer. Built on Hetzner Cloud (Object Storage + managed Postgres), so the S3 policies use Hetzner-specific principal ARNs and Deny-only rules.
+> [!NOTE]
+> I'll add AWS and Scaleway, make sure to follow the repo for any updates.
 
-## Setup
+## Installation
+
+```bash
+pip install git+https://github.com/berndsen-io/ducklake-guard.git
+```
+
+Or with [uv](https://docs.astral.sh/uv/):
+
+```bash
+uv pip install git+https://github.com/berndsen-io/ducklake-guard.git
+```
+
+## System overview
+
+```mermaid
+graph LR
+    DGA["dga CLI"]
+    PG_GUARD["ducklake_guard DB<br/>(source of truth)"]
+    PG_CATALOG["ducklake_catalog DB<br/>(RLS + roles)"]
+    S3["Hetzner S3<br/>(bucket policy)"]
+
+    DGA -->|manages grants| PG_GUARD
+    DGA -->|pushes RLS + roles| PG_CATALOG
+    DGA -->|pushes bucket policy| S3
+```
+
+## Prerequisites
+
+- Hetzner server, PostgreSQL, Object Storage bucket. Recommendation, auto deploy with [`ducklake-hetzner`](https://github.com/berndsen-io/ducklake-hetzner).
+- S3 credentials for each user, created manually in the Hetzner Console (no API exists for credential lifecycle)
+- SSH access to the PostgreSQL server (for `dga init`)
+
+## Quick start
 
 ```bash
 cp .env.sample .env
-# Fill in credentials — see comments in .env.sample
+# Fill in credentials
+
+dga init                          # create guard DB, schema, enable RLS
+
+dga user create tim \
+  --access-key <KEY> \
+  --project-id <PID>              # register user, create catalog role
+
+dga allow tim --table customer --read-only
+dga allow tim --table orders --read-write
+
+duckdb -init init-tim.sql         # verify: SHOW TABLES, SELECT, INSERT
+
+dga deny tim --table orders       # revoke access
+dga user delete tim               # remove user, scrub policies, drop role
 ```
 
-## 1. Load sample data
+## CLI quick reference
 
-Generates TPC-H tables (scale factor 0.01) and loads them into the lakehouse.
+| Command | Description |
+|---|---|
+| `dga init` | Create guard DB, schema, pg_hba, enable RLS |
+| `dga user create <name>` | Register user + S3 creds, create catalog role |
+| `dga user delete <name>` | Remove user, scrub policies, drop role |
+| `dga allow <user> --table T` | Grant read-only or read-write access |
+| `dga deny <user> --table T` | Revoke table access |
+| `dga sync` | Converge S3 + RLS to match grant state |
 
-```bash
-set -a && source .env && set +a
-uv run python scripts/load_sample_data.py
-```
+## Documentation
 
-## 2. Apply granular read-only policies
-
-### PostgreSQL catalog
-
-Create a read-only Postgres user that can query the DuckLake metadata catalog but not modify it. See [research/postgres-access-control.md](research/postgres-access-control.md) for the full walkthrough, or apply the SQL directly:
-
-```bash
-ssh ducklake-guard
-su - postgres
-psql -d ducklake_catalog -f sql/create_reader.sql
-```
-
-### Catalog visibility (RLS)
-
-Hide tables the reader shouldn't know about:
-
-```bash
-psql -d ducklake_catalog -f sql/enable_rls.sql
-```
-
-### S3 data layer
-
-Restrict an S3 reader key to `GetObject` on a single table prefix. See [research/s3-access-control.md](research/s3-access-control.md) for how the bucket policy works.
-
-```bash
-set -a && source .env && set +a
-READER_TABLE=customer uv run python scripts/apply_s3_reader_policy.py
-```
-
-## 3. Verify
-
-Connect as the reader and confirm the restrictions:
-
-```bash
-set -a && source .env && set +a && duckdb -init init-reader.sql
-```
-
-```sql
--- Should succeed
-SELECT * FROM customer LIMIT 10;
-
--- Should fail (HTTP 403 — outside allowed prefix)
-SELECT * FROM orders LIMIT 10;
-
--- Should fail (PutObject denied)
-INSERT INTO customer (c_custkey) VALUES (999999);
-```
+- [Architecture](docs/architecture.md): enforcement layers, transaction flow, sync convergence, module dependencies
+- [Usage](docs/usage.md): setup, user management, granting and revoking access, DuckDB verification
+- [Schema](docs/schema.md): database tables, generated columns, composite keys
+- [Design decisions](docs/design-decisions.md): why separate Hetzner projects, RLS limitations, policy size bundling
+- [Development](docs/development.md): running tests, linting, pre-commit checklist

@@ -12,6 +12,9 @@ wheels/
 # Local database
 duckdb
 
+# Generated credentials
+init-*.sql
+
 # Environment
 .env
 
