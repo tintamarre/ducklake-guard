@@ -101,3 +101,18 @@ ALTER TABLE ducklake_table ENABLE ROW LEVEL SECURITY;
 DROP POLICY IF EXISTS admin_all ON ducklake_table;
 CREATE POLICY admin_all ON ducklake_table FOR SELECT TO ducklake USING (true);
 """
+
+ENV_TEMPLATE = """\
+# PostgreSQL Configuration
+POSTGRES_HOST=""
+POSTGRES_DB_PASSWORD=""
+
+# Hetzner Object Storage
+S3_ACCESS_KEY=""
+S3_SECRET_KEY=""
+S3_ENDPOINT="nbg1.your-objectstorage.com"
+S3_REGION="nbg1"
+S3_BUCKET_NAME="ducklake-changeme"
+S3_DATA_PATH="s3://ducklake-changeme/"
+S3_USE_SSL=true
+"""

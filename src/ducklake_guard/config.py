@@ -3,6 +3,16 @@ from __future__ import annotations
 import os
 from dataclasses import dataclass
 
+REQUIRED_ENV_VARS = [
+    "S3_ENDPOINT",
+    "S3_ACCESS_KEY",
+    "S3_SECRET_KEY",
+    "S3_BUCKET_NAME",
+    "S3_DATA_PATH",
+    "POSTGRES_HOST",
+    "POSTGRES_DB_PASSWORD",
+]
+
 
 @dataclass(frozen=True)
 class Config:
@@ -18,6 +28,15 @@ class Config:
 
     @classmethod
     def from_env(cls) -> Config:
+        missing = [v for v in REQUIRED_ENV_VARS if v not in os.environ]
+        if missing:
+            import click
+
+            raise click.ClickException(
+                "Missing environment variables:\n"
+                + "".join(f"  - {v}\n" for v in missing)
+                + '\nRun "dga env" to generate a .env template.'
+            )
         return cls(
             s3_endpoint=os.environ["S3_ENDPOINT"],
             s3_access_key=os.environ["S3_ACCESS_KEY"],
