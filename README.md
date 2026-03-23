@@ -1,6 +1,7 @@
 # `ducklake-guard`
 > **Experimental** — ducklake-guard is under active development. It works, but has not been audited. Review carefully before using in sensitive or production environments.
 
+[![PyPI](https://img.shields.io/pypi/v/ducklake-guard?color=blue)](https://pypi.org/project/ducklake-guard/)
 [![CI](https://github.com/berndsen-io/ducklake-guard/actions/workflows/ci.yml/badge.svg)](https://github.com/berndsen-io/ducklake-guard/actions/workflows/ci.yml)
 [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
 [![Python 3.12+](https://img.shields.io/badge/python-3.12%2B-blue.svg)](https://www.python.org/downloads/)
@@ -17,13 +18,19 @@ Per-table access control for [DuckLake](https://ducklake.select) lakehouses on H
 ## Installation
 
 ```bash
-pip install git+https://github.com/berndsen-io/ducklake-guard.git
+pip install ducklake-guard
 ```
 
 Or with [uv](https://docs.astral.sh/uv/):
 
 ```bash
-uv pip install git+https://github.com/berndsen-io/ducklake-guard.git
+uv pip install ducklake-guard
+```
+
+From source:
+
+```bash
+pip install git+https://github.com/berndsen-io/ducklake-guard.git
 ```
 
 ## System overview
@@ -49,7 +56,7 @@ graph LR
 ## Quick start
 
 ```bash
-cp .env.sample .env
+dga env > .env
 # Fill in credentials
 
 dga init                          # create guard DB, schema, enable RLS

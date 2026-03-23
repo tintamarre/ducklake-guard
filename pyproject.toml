@@ -31,6 +31,7 @@ Homepage = "https://github.com/berndsen-io/ducklake-guard"
 Repository = "https://github.com/berndsen-io/ducklake-guard"
 Documentation = "https://github.com/berndsen-io/ducklake-guard/tree/main/docs"
 Issues = "https://github.com/berndsen-io/ducklake-guard/issues"
+Changelog = "https://github.com/berndsen-io/ducklake-guard/blob/main/CHANGELOG.md"
 
 [build-system]
 requires = ["hatchling"]

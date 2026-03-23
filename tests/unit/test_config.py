@@ -34,12 +34,14 @@ class TestFromEnv:
         assert cfg.postgres_host == "db.example.com"
         assert cfg.postgres_db_password == "pgpass"
 
-    def test_missing_required_var_raises_key_error(self, monkeypatch):
+    def test_missing_required_var_raises_click_exception(self, monkeypatch):
         for k, v in REQUIRED_ENV.items():
             monkeypatch.setenv(k, v)
         monkeypatch.delenv("S3_ENDPOINT")
 
-        with pytest.raises(KeyError):
+        import click
+
+        with pytest.raises(click.ClickException, match="S3_ENDPOINT"):
             Config.from_env()
 
 

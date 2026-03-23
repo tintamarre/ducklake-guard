@@ -14,6 +14,7 @@ from ducklake_guard.db import create_user as db_create_user
 from ducklake_guard.db import delete_grant, get_user, upsert_grant
 from ducklake_guard.sync import sync as do_sync
 from ducklake_guard.templates import (
+    ENV_TEMPLATE,
     INIT_SQL,
     PG_HBA_LINE,
     PG_HBA_PATH,
@@ -97,6 +98,11 @@ def init(ctx: click.Context, ssh_host: str) -> None:
         click.echo("pg_hba.conf entry already present")
 
     click.echo("Init complete")
+
+
+@cli.command()
+def env() -> None:
+    click.echo(ENV_TEMPLATE, nl=False)
 
 
 @cli.group()
