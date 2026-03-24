@@ -92,3 +92,8 @@ dga user delete tim               # remove user, scrub policies, drop role
 - [Schema](docs/schema.md): database tables, generated columns, composite keys
 - [Design decisions](docs/design-decisions.md): why separate Hetzner projects, RLS limitations, policy size bundling
 - [Development](docs/development.md): running tests, linting, pre-commit checklist
+
+---
+
+Need help deploying DuckLake to production?
+[berndsen.io](https://berndsen.io)
